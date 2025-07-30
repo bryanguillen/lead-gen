@@ -1,0 +1,11 @@
+searchPlaces(query) → list of place_ids
+      ↓
+getPlaceDetails(place_id) → name, phone, website, rating, etc.
+      ↓
+fetchWebsite(email_scraper) → extract email from homepage/contact
+      ↓
+verifyEmail(smtp) → check validity
+      ↓
+generateEmail(template) → OpenAI
+      ↓
+import to Instantly
