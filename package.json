@@ -11,12 +11,15 @@
   "description": "",
   "dependencies": {
     "@googlemaps/places": "^2.1.0",
+    "axios": "^1.11.0",
     "csv-parser": "^3.2.0",
+    "csv-writer": "^1.6.0",
     "dotenv": "^17.2.1",
     "email-verify": "^0.2.1",
     "json2csv": "^6.0.0-alpha.2"
   },
   "devDependencies": {
+    "@types/axios": "^0.9.36",
     "@types/json2csv": "^5.0.7",
     "@types/node": "^24.1.0",
     "ts-node": "^10.9.2",
