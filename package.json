@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "validate-emails": "ts-node apps/validate-emails/main.ts"
   },
   "keywords": [],
   "author": "",
@@ -11,9 +11,13 @@
   "description": "",
   "dependencies": {
     "@googlemaps/places": "^2.1.0",
-    "dotenv": "^17.2.1"
+    "csv-parser": "^3.2.0",
+    "dotenv": "^17.2.1",
+    "email-verify": "^0.2.1",
+    "json2csv": "^6.0.0-alpha.2"
   },
   "devDependencies": {
+    "@types/json2csv": "^5.0.7",
     "@types/node": "^24.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
