@@ -5,7 +5,8 @@
   "scripts": {
     "validate-emails": "ts-node apps/validate-emails/main.ts",
     "scrape-google-maps": "ts-node apps/scrape-google-maps/index.ts",
-    "scrape-google-maps-dedupe": "ts-node apps/scrape-google-maps/dedupe.ts"
+    "scrape-google-maps-dedupe": "ts-node apps/scrape-google-maps/dedupe.ts",
+    "extract-emails": "ts-node apps/extract-emails/main.ts"
   },
   "keywords": [],
   "author": "",
