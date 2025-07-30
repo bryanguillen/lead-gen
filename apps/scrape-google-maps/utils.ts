@@ -8,15 +8,21 @@ const { CONFIG } = require('./config');
 
 const NO_WEBSITE = 'No Website';
 
-const fetchBusinesses = async (
-  professionName: string,
-  city: string,
-  state: string
-): Promise<Place[]> => {
+const sleep = (ms: number): Promise<void> => 
+  new Promise(resolve => setTimeout(resolve, ms));
+
+const parseTextQueries = (textQuery: string): string[] => {
+  return textQuery
+    .split(';')
+    .map(query => query.trim())
+    .filter(query => query.length > 0);
+};
+
+const fetchBusinessesForQuery = async (textQuery: string): Promise<Place[]> => {
   const url = 'https://places.googleapis.com/v1/places:searchText';
 
   const requestBody = {
-    textQuery: `${professionName} in ${city}, ${state}`,
+    textQuery,
   };
 
   const response = await axios.post(url, requestBody, {
@@ -29,49 +35,94 @@ const fetchBusinesses = async (
   }) as { data: PlacesApiResponse };
 
   if (!response.data || !response.data.places) {
-    console.warn(`No results found for ${city}`);
+    console.warn(`No results found for query: "${textQuery}"`);
     return [];
   }
 
   return response.data.places;
 };
 
+const fetchAllBusinesses = async (textQueries: string[]): Promise<Place[]> => {
+  const allPlaces: Place[] = [];
+  
+  console.log(`🔍 Processing ${textQueries.length} queries...`);
+  
+  for (let i = 0; i < textQueries.length; i++) {
+    const query = textQueries[i];
+    console.log(`📋 Query ${i + 1}/${textQueries.length}: "${query}"`);
+    
+    try {
+      const places = await fetchBusinessesForQuery(query);
+      allPlaces.push(...places);
+      console.log(`   ✅ Found ${places.length} results`);
+    } catch (error) {
+      console.error(`   ❌ Error for query "${query}":`, error);
+    }
+    
+    // Rate limiting: wait between requests (except for the last one)
+    if (i < textQueries.length - 1) {
+      console.log('   ⏳ Waiting 1 second before next query...');
+      await sleep(1000);
+    }
+  }
+  
+  console.log(`📊 Total raw results: ${allPlaces.length}`);
+  return allPlaces;
+};
+
 const parseBusinesses = (places: Place[]): BusinessData[] => {
   const getCity = (place: Place) => {
     const localityObject = (place.addressComponents || []).find(
       (component: any) => {
-        return component.types.includes('locality');
+        return component.types && component.types.includes('locality');
       }
     );
 
     return localityObject?.longText || 'Unknown City';
   };
 
-  return places
-    .filter(
-      (place) =>
-        !!place.rating &&
-        place.rating >= 3.5 &&
-        !!place.userRatingCount &&
-        place.userRatingCount <= 150
-    )
-    .map((place) => {
-      const orgName = place.displayName?.text || 'Unknown Name';
-      const city = getCity(place);
-      const website = place.websiteUri || NO_WEBSITE;
-      const facebookQuery = `https://www.google.com/search?q=${encodeURIComponent(`${orgName} ${city} facebook`)}`;
+  // First, deduplicate by Google Maps URI
+  const uniquePlaces = places.reduce((acc: Place[], current) => {
+    const uri = current.googleMapsUri;
+    if (!uri) return acc;
+    
+    const exists = acc.some(place => place.googleMapsUri === uri);
+    if (!exists) {
+      acc.push(current);
+    }
+    return acc;
+  }, []);
 
-      return {
-        orgName,
-        city,
-        facebookQuery,
-        googleMapsUri: place.googleMapsUri || '',
-        website,
-        // Needed for CSV
-        email: '',
-        name: '',
-      };
-    });
+  console.log(`🔧 Deduplication: ${places.length} → ${uniquePlaces.length} unique businesses`);
+
+  // Then filter and transform
+  const filtered = uniquePlaces.filter(
+    (place) =>
+      !!place.rating &&
+      place.rating >= CONFIG.LOWER_BOUND &&
+      !!place.userRatingCount &&
+      place.userRatingCount <= CONFIG.UPPER_BOUND
+  );
+
+  console.log(`📊 After filtering: ${filtered.length} businesses meet criteria`);
+
+  return filtered.map((place) => {
+    const orgName = place.displayName?.text || 'Unknown Name';
+    const city = getCity(place);
+    const website = place.websiteUri || NO_WEBSITE;
+    const facebookQuery = `https://www.google.com/search?q=${encodeURIComponent(`${orgName} ${city} facebook`)}`;
+
+    return {
+      orgName,
+      city,
+      facebookQuery,
+      googleMapsUri: place.googleMapsUri || '',
+      website,
+      // Needed for CSV
+      email: '',
+      name: '',
+    };
+  });
 };
 
 const writeBusinessesToCsv = (businesses: BusinessData[]) => {
@@ -120,7 +171,8 @@ const writeBusinessesToCsv = (businesses: BusinessData[]) => {
 };
 
 module.exports = {
-  fetchBusinesses,
+  parseTextQueries,
+  fetchAllBusinesses,
   parseBusinesses,
   writeBusinessesToCsv,
 };

@@ -1,22 +1,34 @@
 const config = require('./config');
 const {
-  fetchBusinesses,
+  parseTextQueries,
+  fetchAllBusinesses,
   parseBusinesses,
   writeBusinessesToCsv,
 } = require('./utils');
 
-async function main(professionName: string, city: string, state: string) {
+async function main(textQuery: string) {
   try {
-    const rawBusinesses = await fetchBusinesses(professionName, city, state);
+    console.log('🚀 Starting lead generation...');
+    console.log(`📝 Text Query: "${textQuery}"`);
+
+    // Parse the semicolon-delimited queries
+    const queries = parseTextQueries(textQuery);
+    console.log(`📋 Parsed into ${queries.length} individual queries`);
+
+    // Fetch businesses from all queries
+    const rawBusinesses = await fetchAllBusinesses(queries);
+    
+    // Parse and deduplicate businesses
     const businesses = parseBusinesses(rawBusinesses);
 
+    // Write to CSV files
     writeBusinessesToCsv(businesses);
 
-    console.log('DONE!');
+    console.log('✅ DONE!');
   } catch (error) {
-    console.error('Error fetching data:', error);
-    return [];
+    console.error('❌ Error fetching data:', error);
+    process.exit(1);
   }
 }
 
-main(config.CONFIG.PROFESSION_NAME, config.CONFIG.CITY_NAME, config.CONFIG.CITY_STATE);
+main(config.CONFIG.TEXT_QUERY);

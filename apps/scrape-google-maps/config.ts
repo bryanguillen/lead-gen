@@ -1,7 +1,7 @@
 const dotenv = require('dotenv');
-const path = require('path');
+const pathModule = require('path');
 
-dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config({ path: pathModule.join(__dirname, '.env') });
 
 const getEnvVar = (key: string): string => {
   const value = process.env[key];
@@ -12,10 +12,10 @@ const getEnvVar = (key: string): string => {
 };
 
 const CONFIG = {
-  CITY_NAME: getEnvVar('CITY_NAME'),
-  CITY_STATE: getEnvVar('CITY_STATE'),
+  TEXT_QUERY: getEnvVar('TEXT_QUERY'),
   GOOGLE_API_KEY: getEnvVar('GOOGLE_API_KEY'),
-  PROFESSION_NAME: getEnvVar('PROFESSION_NAME'),
+  LOWER_BOUND: parseInt(getEnvVar('LOWER_BOUND')),
+  UPPER_BOUND: parseInt(getEnvVar('UPPER_BOUND')),
 } as const;
 
 module.exports = { CONFIG };
