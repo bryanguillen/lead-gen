@@ -7,4 +7,7 @@ apps/validate-emails/failure.csv
 
 apps/scrape-google-maps/output
 
+apps/extract-emails/input.csv
+apps/extract-emails/results.csv
+
 leads/*
