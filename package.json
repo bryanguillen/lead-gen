@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "validate-emails": "ts-node apps/validate-emails/main.ts"
+    "validate-emails": "ts-node apps/validate-emails/main.ts",
+    "scrape-google-maps": "ts-node apps/scrape-google-maps/index.ts"
   },
   "keywords": [],
   "author": "",
