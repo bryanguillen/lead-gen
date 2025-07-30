@@ -12,7 +12,6 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@googlemaps/places": "^2.1.0",
     "axios": "^1.11.0",
     "csv-parser": "^3.2.0",
     "csv-writer": "^1.6.0",
